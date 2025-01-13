@@ -94,7 +94,7 @@ function [map, mu, seg, moving] = HBS_seg(static, moving, P)
         Plot.pri_plot_mu(hbs_mu, face, vert);
         colormap(sp1, "gray");
         colormap(sp2, "gray");
-        set(gcf, 'unit', 'normalized', 'position', [0 0 1 1])
+        set(gcf, 'unit', 'normalized')
         drawnow();
 
         if init_image_display ~= "" && endsWith(init_image_display, '.png')
@@ -133,7 +133,7 @@ function [map, mu, seg, moving] = HBS_seg(static, moving, P)
         Plot.pri_scatter(center_pos);
         hold off;
 
-        set(gcf, 'unit', 'normalized', 'position', [0 0 1 1])
+        set(gcf, 'unit', 'normalized')
         drawnow();
 
         if recounstruced_bound_display ~= "" && endsWith(recounstruced_bound_display, '.png')

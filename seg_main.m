@@ -71,7 +71,7 @@ function [map, smooth_mu, seg] = seg_main(rstatic, unit_disk, face, vert, rvert,
     loss_list = [];
 
     f1 = figure;
-    set(f1, 'unit', 'normalized', 'position', [0 0 1 1]);
+    set(f1, 'unit', 'normalized');
 
     f2 = figure;
 

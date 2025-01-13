@@ -45,7 +45,7 @@ extend_hbs(1:size(disk_face,1)) = hbs;
 %% Interplate HBS so that it has the same number of points as image.
 extend_op = Mesh.mesh_operator(extend_face, extend_vert);
 hbs_v = extend_op.f2v * extend_hbs;
-[~, vert] = Mesh.rect_mesh(height, width, 0);
+[face, vert] = Mesh.rect_mesh(height, width, 0);
 interp_map = scatteredInterpolant(extend_vert, hbs_v);
 hbs_interp_v = interp_map(vert);
 %% (Optial, pull back HBS into each face)
@@ -55,13 +55,20 @@ hbs_interp_v = interp_map(vert);
 
 if isplot
 % disp(fname);
-Plot.imshow(im);
-Plot.plot_mu(hbs, disk_face, disk_vert);
-Plot.plot_mu(extend_hbs, extend_face, extend_vert)
-Plot.plot_map(hbs_interp_v, vert);
+% Plot.imshow(im);
+% Plot.plot_mu(hbs, disk_face, disk_vert);
+% Plot.plot_mu(extend_hbs, extend_face, extend_vert);
+% Plot.plot_map(hbs_interp_v, vert);
+
+
 % Plot.plot_mu(hbs_interp_f, face, vert);
 
-hbs_interp_v = Tools.complex2real(reshape(hbs_interp_v, height, width));
+% hbs_interp_v = Tools.complex2real(reshape(hbs_interp_v, height, width));
 
+rect_hbs = abs(reshape(hbs_interp_v, height, width));
+h = round((height - 128) / 2);
+w = round((width - 128 ) / 2);
+Plot.imshow(rect_hbs(h:height-h, w:width-w));
+colormap jet;
 end
 end

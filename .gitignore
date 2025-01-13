@@ -9,3 +9,4 @@ config
 vars
 *.pyc
 *.db
+*.mat
