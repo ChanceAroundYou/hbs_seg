@@ -164,8 +164,10 @@ classdef Plot
             elseif length(varargin) == 1
                 face_center = varargin{1};
             end
-
-            scatter3(face_center(:, 1), face_center(:, 2), abs(mu), 10, abs(mu), 'filled');
+            
+            z = abs(mu);
+%             z(z>1) = 1;
+            scatter3(face_center(:, 1), face_center(:, 2), z, 10, z, 'filled');
             axis equal;
             box on;
             % axis([-1 1 -1 1 0 1]);

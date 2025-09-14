@@ -3,14 +3,16 @@ function [map, smooth_mu, seg] = seg_main(rstatic, unit_disk, face, vert, rvert,
     seg_display = P.seg_display;
     iteration = P.iteration;
     gaussian = P.gaussian;
-    eta = P.eta;
-    seta = P.seta;
-    k1 = P.k1;
-    k2 = P.k2;
+    
     alpha = P.alpha;                % similarity with mu_f
     beta = P.beta;                  % similarity with HBS
+    gamma = P.gamma;
     delta = P.delta;                % grad of mu
     lambda = P.lambda;              % abs of mu
+    eta = P.eta;      
+    tao = P.tao;
+    
+ 
     upper_bound = P.upper_bound;
     contour_width = P.contour_width;
     smooth_x_window = P.smooth_window(1);
@@ -46,6 +48,7 @@ function [map, smooth_mu, seg] = seg_main(rstatic, unit_disk, face, vert, rvert,
     % Initialize parameters
     warning('off', 'all')
     stopcount = 0;
+    not_project_count = 0;
     
 
     op = Mesh.mesh_operator(face, vert);
@@ -74,6 +77,8 @@ function [map, smooth_mu, seg] = seg_main(rstatic, unit_disk, face, vert, rvert,
     set(f1, 'unit', 'normalized');
 
     f2 = figure;
+    landmark_pos = find(landmark);
+    landmark_value = init_map(landmark, :);
 
     % iterations
     for k = 1:iteration
@@ -84,13 +89,32 @@ function [map, smooth_mu, seg] = seg_main(rstatic, unit_disk, face, vert, rvert,
         
         u = compute_u( ...
             static, temp_seg, unit_disk, vert, temp_map, landmark, ...
-            op, gaussian, eta, k1, k2, target_color, background_color ...
+            op, gaussian, 1, gamma, delta, target_color, background_color ...
         );
         temp_map_x_intp = scatteredInterpolant(u, vert(:,1));
         temp_map_y_intp = scatteredInterpolant(u, vert(:,2));
         temp_map = [temp_map_x_intp(temp_map),temp_map_y_intp(temp_map)];
+
+        
+
         temp_seg = Tools.move_seg(unit_disk,vert,temp_map,static);
         end
+        
+        % if not_project_count >= 0
+        %     try
+        %         [projected_map, projected_mu] = HBS_projection(temp_map, face, vert, landmark, m, n, P);
+        %         temp_map = projected_map;
+        %         % smooth_mu = projected_mu;
+        %         % landmark_value = projected_map(landmark, :);
+        %         not_project_count = 0;
+        %         disp('project')
+        %     catch err
+        %         disp(err);
+        %         % not_project_count = not_project_count + 1;
+        %     end
+        % else
+        %     not_project_count = not_project_count + 1;
+        % end
         % temp_f_map_intp_x = scatteredInterpolant(temp_map, vert(:, 1));
         % temp_f_map_intp_y = scatteredInterpolant(temp_map, vert(:, 2));
         % temp_f_map = [temp_f_map_intp_x(vert), temp_f_map_intp_y(vert)];
@@ -100,19 +124,36 @@ function [map, smooth_mu, seg] = seg_main(rstatic, unit_disk, face, vert, rvert,
         % temp_mu = (gx_temp_map + 1i * gy_temp_map) ./ (gx_temp_map - 1i * gy_temp_map + 1e-10);
         temp_mu = Tools.mu_chop(temp_mu, upper_bound);
         if k < 5
-            smooth_mu = smoothing(temp_mu, hbs_mu, op, inner_idx, alpha, beta, lambda, delta,0, m, n);
+            smooth_mu = smoothing(temp_mu, hbs_mu, op, inner_idx, alpha, beta, lambda, eta, tao, m, n);
         else
-            smooth_mu = smoothing(temp_mu, hbs_mu, op, inner_idx, alpha, beta, lambda, delta,seta, m, n);
+            smooth_mu = smoothing(temp_mu, hbs_mu, op, inner_idx, alpha, beta, lambda, eta, tao, m, n);
         end
         smooth_mu = Tools.mu_chop(smooth_mu, upper_bound);
         % smooth_mu = temp_mu;
-        map = lsqc_solver(face, vert, smooth_mu, find(landmark), init_map(landmark, :));
+        map = lsqc_solver(face, vert, smooth_mu, landmark_pos, landmark_value);
+        % map = lsqc_solver(face, vert, smooth_mu, landmark_pos, temp_map(landmark, :));
         % map = lsqc_solver(face, vert, op.v2f * temp_mu(:), find(landmark), init_map(landmark, :));
         % map = lsqc_solver(face, vert, op.v2f * smooth_mu, [zero_pos;one_pos], temp_map([zero_pos;one_pos], :));
         
         % map_intp_x = scatteredInterpolant(f_map, vert(:, 1));
         % map_intp_y = scatteredInterpolant(f_map, vert(:, 2));
         % map = [map_intp_x(vert), map_intp_y(vert)];
+        
+        if not_project_count >= 100
+            try
+                [projected_map, projected_mu] = HBS_projection(map, face, vert, landmark, m, n, P);
+                map = projected_map;
+                smooth_mu = projected_mu;
+                % landmark_value = projected_map(landmark, :);
+                not_project_count = 0;
+                disp('project')
+            catch err
+                disp(err);
+                % not_project_count = not_project_count + 1;
+            end
+        else
+            not_project_count = not_project_count + 1;
+        end
 
         target_color_old = target_color;
         background_color_old = background_color;

@@ -12,15 +12,15 @@ function [hbs, he, x, y, face, vert, face_center] = HBS(bound, circle_point_num,
 % face_center: m x 2 real, center point of faces
 
 %%%%%%%%%%%%%%%%%%%% init params
-if nargin == 1
+if nargin <= 1
     circle_point_num = 1e3;
 end
 
-if nargin == 2
+if nargin <= 2
     mesh_density = 100;
 end
 %%%%%%%%%%%%%%%%%%%%
-hbs_upper_bound = 0.9999;
+hbs_upper_bound = 1-1e-8;
 circle_interval = (2 / circle_point_num)*pi; 
 [face, vert] = Mesh.unit_disk_mesh(mesh_density, circle_interval);
 face_center = Mesh.get_face_center(face, vert);
@@ -29,13 +29,21 @@ inner_vert_idx = (circle_point_num+1:size(vert,1))';
 %%%%%%%%%%%%%%%%%%%% get phi1
 [outer_points, ~, outer_params] = Zipper.zipper(bound);
 if any(isnan(outer_points))
-    error('Failed in getting phi1')
+    error('NAN, Failed in getting phi1')
+elseif any(isinf(outer_points))
+    error('INF, Failed in getting phi1')
+elseif size(unique(outer_points), 1) / size(outer_points, 1) < 0.9
+    error('OVERLAP, Failed in getting phi1')
 end
     
 %%%%%%%%%%%%%%%%%%%% get phi2
 [inner_points, ~, ~] = Zipper.zipper(flipud(bound));
 if any(isnan(inner_points))
-    error('Failed in getting phi2')
+    error('NAN, Failed in getting phi2')
+elseif any(isinf(inner_points))
+    error('INF, Failed in getting phi2')
+elseif size(unique(inner_points), 1) / size(inner_points, 1) < 0.9
+    error('OVERLAP, Failed in getting phi2')
 end
 
 

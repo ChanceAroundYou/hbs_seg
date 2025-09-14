@@ -10,3 +10,5 @@ vars
 *.pyc
 *.db
 *.mat
+lung.zip
+# img/hbs_seg/lung/*

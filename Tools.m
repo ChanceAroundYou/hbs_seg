@@ -276,7 +276,7 @@ classdef Tools
 
         function mu = mu_chop(mu,bound,constant)
             if nargin == 1
-                bound = 0.9999;
+                bound = 1-1e-8;
             end
             if nargin < 3
                 constant = bound;

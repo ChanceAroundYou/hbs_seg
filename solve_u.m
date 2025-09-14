@@ -1,4 +1,4 @@
-function [ux, uy] = solve_u(I, J, map, vert, Op, boundary_pos, eta, k1, k2)
+function [ux, uy] = solve_u(I, J, map, vert, Op, boundary_pos, k, gamma, delta)
     [m, n] = size(I);
     num = m * n;
 
@@ -22,12 +22,12 @@ function [ux, uy] = solve_u(I, J, map, vert, Op, boundary_pos, eta, k1, k2)
     
     
 
-    A = spdiags(eta * gx.^2, 0, num, num) + k1 * E - k2 * Op.laplacian;
+    A = spdiags(k * gx.^2, 0, num, num) + gamma * E - delta * Op.laplacian;
     % B = spdiags(0 * gx .* gy, 0, num, num);
-    C = spdiags(eta * gy.^2, 0, num, num) + k1 * E - k2 * Op.laplacian;
+    C = spdiags(k * gy.^2, 0, num, num) + gamma * E - delta * Op.laplacian;
 
-    s = - eta * diff .* gx ;
-    t = - eta * diff .* gy ;
+    s = - k * diff .* gx ;
+    t = - k * diff .* gy ;
     % M = [A B ; B C];
     % f = [s ; t];
     ux = solveAXB_SP(A, s, boundary_pos);

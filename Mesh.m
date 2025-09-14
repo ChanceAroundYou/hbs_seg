@@ -46,7 +46,14 @@ classdef Mesh
             bound = bounds{1}{k}(1:end-1, :);
             bound(:, 2) = size(im, 1) + 1 - bound(:, 2);
             bound = Tools.real2complex(bound);
-
+            
+            sigma = 4;
+            gauss_size = 7;
+            bound_real = imgaussfilt(real(bound), sigma, 'FilterSize', gauss_size);
+            bound_imag = imgaussfilt(imag(bound), sigma, 'FilterSize', gauss_size);
+            bound = bound_real + 1i * bound_imag;
+            % bound = imgaussfilt(bound, 1); % Adjust sigma for more or less smoothing
+     
             if num ~= 0
                 bound_size = length(bound);
                 interval = (bound_size-1) / (num-1);

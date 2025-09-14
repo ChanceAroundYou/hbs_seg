@@ -1,6 +1,6 @@
 function u = compute_u( ...
     static, seg, unit_disk, vert, map, landmark, ...
-    op, gaussian_params, eta, k1, k2, target_color, background_color ...
+    op, gaussian_params, k, gamme, delta, target_color, background_color ...
 )
     [m, n] = size(static);
     % if vert == init_map
@@ -14,7 +14,7 @@ function u = compute_u( ...
     % moving = target_color * init_moving + background_color * (1 - init_moving);
     % moving = Tools.move_seg(unit_disk,vert,map,target_color,background_color);
     moving = seg;
-    [ux, uy] = solve_u(static, moving, map, vert, op, landmark, eta, k1, k2);
+    [ux, uy] = solve_u(static, moving, map, vert, op, landmark, k, gamme, delta);
 
     if gaussian_params(1) > 0
         ux = reshape(ux, [m, n]);

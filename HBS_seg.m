@@ -54,6 +54,7 @@ function [map, mu, seg, moving] = HBS_seg(static, moving, P)
     end
     
     [reconstructed_bound, inner, outer, normal_vert, face] = HBS_reconstruct(hbs, disk_face, disk_vert, m, n, mesh_density, center_x, center_y);
+    normal_face_center = Mesh.get_face_center(face, normal_vert);
     vert = normal_vert .* mesh_density + center;
     hbs_map = Tools.complex2real([reconstructed_bound; inner; outer]);
     hbs_map = hbs_map .* mesh_density + center;
@@ -66,6 +67,7 @@ function [map, mu, seg, moving] = HBS_seg(static, moving, P)
     % hbs_mu = Tools.mu_chop(hbs_mu, mu_upper_bound);
     hbs_mu = bc_metric(face, vert, hbs_map, 2);
     hbs_mu = Tools.mu_chop(hbs_mu, mu_upper_bound);
+    hbs_mu(Tools.norm(normal_face_center)>1) = 0;
     reconstructed_bound = hbs_map(1:circle_point_num, :);
     % init_moving = double(Tools.move_pixels(unit_disk, vert, map) >= 0.5);
 
