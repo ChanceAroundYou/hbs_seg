@@ -36,6 +36,12 @@ function [map, smooth_mu, seg] = seg_main(rstatic, unit_disk, face, vert, rvert,
         show_mu = 0;
     end
 
+    if isfield(P, 'show_results')
+        show_results = P.show_results;
+    else
+        show_results = 1;
+    end
+
     if isfield(P, 'reverse_image') && P.reverse_image
         show_static = 1 - rstatic;
         show_compare = 1 - rcompare;
@@ -184,7 +190,7 @@ function [map, smooth_mu, seg] = seg_main(rstatic, unit_disk, face, vert, rvert,
         fprintf(info);
 
         
-        if mod(k, 1) == 0
+        if mod(k, 1) == 0 && show_results
             temp_seg_image = Tools.irregular2image(temp_seg,vert,rvert,m,n);
             seg_image = Tools.irregular2image(seg,vert,rvert,m,n);
             if seg_display ~= "none"
@@ -275,7 +281,7 @@ function [map, smooth_mu, seg] = seg_main(rstatic, unit_disk, face, vert, rvert,
         end
 
         % Stopping criterion
-        if stopcount == 10 || k == iteration
+        if (stopcount == 10 || k == iteration) && show_results
             if seg_display ~= "none"
                 Plot.imshow(show_static);
                 hold on;
