@@ -27,6 +27,12 @@ function [map, mu, seg, moving] = HBS_seg(static, moving, P)
     init_image_display = P.init_image_display;
     recounstruced_bound_display = P.recounstruced_bound_display;
 
+    if isfield(P, 'show_results')
+        show_results = P.show_results;
+    else
+        show_results = 1;
+    end
+
     % if isfield(P, 'distort_bound')
     %     distort_bound = P.distort_bound;
     % else
@@ -80,7 +86,7 @@ function [map, mu, seg, moving] = HBS_seg(static, moving, P)
     init_moving = unit_disk;
 
     % Display init_moving, map and mu
-    if init_image_display ~= "none"
+    if init_image_display ~= "none" && show_results
         figure;
         sp1 = subplot(1, 3, 1);
         imshow(show_static);
@@ -121,7 +127,7 @@ function [map, mu, seg, moving] = HBS_seg(static, moving, P)
     updated_moving = Tools.move_pixels(unit_disk,vert,updated_map);
     updated_moving_image = Tools.irregular2image(updated_moving, vert, rvert, m, n);
 
-    if recounstruced_bound_display ~= "none"
+    if recounstruced_bound_display ~= "none" && show_results
         figure;
         subplot(1, 3, 1)
         imshow(show_static);
@@ -151,9 +157,10 @@ function [map, mu, seg, moving] = HBS_seg(static, moving, P)
     end
 
     %% Compute the object boundary (Main Program)
-
-    % 1st time computation
+    tic; % 开始计时
     [map, mu, seg] = seg_main(static, unit_disk, face, vert, rvert, updated_map, hbs_mu, P);
+    elapsedTime = toc; % 停止计时
+    fprintf('程序运行时间: %.4f 秒\n', elapsedTime);
 end
 
 function [scaling, rotation, a, b] = get_transformation_params(static, moving, params)

@@ -185,9 +185,11 @@ function [map, smooth_mu, seg] = seg_main(rstatic, unit_disk, face, vert, rvert,
             best_map = map;
         end
 
-        info_fmt = 'Interation %i of %s \n C1: %.4f -> %.4f, C2: %.4f -> %.4f\n loss: %.3f / %.3f, stopcount %i\n';
-        info = sprintf(info_fmt, k, P.config_name, target_color_old, target_color, background_color_old, background_color, loss, best_loss, stopcount);
-        fprintf(info);
+        if show_results
+            info_fmt = 'Interation %i of %s \n C1: %.4f -> %.4f, C2: %.4f -> %.4f\n loss: %.3f / %.3f, stopcount %i\n';
+            info = sprintf(info_fmt, k, P.config_name, target_color_old, target_color, background_color_old, background_color, loss, best_loss, stopcount);
+            fprintf(info);
+        end
 
         
         if mod(k, 1) == 0 && show_results

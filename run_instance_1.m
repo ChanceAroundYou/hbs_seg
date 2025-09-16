@@ -77,7 +77,4 @@ static = imnoise(static,"gaussian",0,0.0);
 % outer_boundary_idx = any([vert(:, 1)==0, vert(:, 1) == (n-1), vert(:,2) == 0, vert(:,2)== (m-1)], 2);
 % landmark = find(outer_boundary_idx);
 
-tic; % 开始计时
 HBS_seg(static,moving, P);
-elapsedTime = toc; % 停止计时
-fprintf('程序运行时间: %.4f 秒\n', elapsedTime);
