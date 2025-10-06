@@ -101,65 +101,65 @@ def calculate_hausdorff_distance(image1, image2, threshold=0.5):
 
 if __name__ == "__main__":
     try:
-        # 替换为你的图片路径
         dir_path = "img/hbs_seg/cdice/"
         img_num = 5
-        dice_list_1 = [0] * img_num
-        dice_list_2 = [0] * img_num
-        dice_list_3 = [0] * img_num
-        dice_list_4 = [0] * img_num
-        hd_list_1 = [0] * img_num
-        hd_list_2 = [0] * img_num
-        hd_list_3 = [0] * img_num
-        hd_list_4 = [0] * img_num
-
         size = (100, 100)
+        models = {"UNet": "1", "Deeplab": "2", "C2F-Seg": "3", "TPSN": "4", "Our": "5"}
+        results = {name: {"dice": [], "hd": []} for name in models}
 
-        for num in range(1, img_num + 1):
-            gt = Image.open(f"{dir_path}{num}g.png").convert("L").resize(size)
-            image1 = Image.open(f"{dir_path}{num}1.png").convert("L").resize(size)
-            image2 = Image.open(f"{dir_path}{num}2.png").convert("L").resize(size)
-            image3 = Image.open(f"{dir_path}{num}3.png").convert("L").resize(size)
-            image4 = Image.open(f"{dir_path}{num}4.png").convert("L").resize(size)
-            dice1 = calculate_dice(image1, gt)
-            dice2 = calculate_dice(image2, gt)
-            dice3 = calculate_dice(image3, gt)
-            dice4 = calculate_dice(image4, gt)
-            hd1 = calculate_hausdorff_distance(image1, gt)
-            hd2 = calculate_hausdorff_distance(image2, gt)
-            hd3 = calculate_hausdorff_distance(image3, gt)
-            hd4 = calculate_hausdorff_distance(image4, gt)
+        for i in range(1, img_num + 1):
+            gt = Image.open(f"{dir_path}{i}g.png").convert("L").resize(size)
+            
+            dice_scores = {}
+            hd_scores = {}
 
-            dice_list_1[num - 1] = dice1
-            dice_list_2[num - 1] = dice2
-            dice_list_3[num - 1] = dice3
-            dice_list_4[num - 1] = dice4
+            for name, suffix in models.items():
+                pred_img = Image.open(f"{dir_path}{i}{suffix}.png").convert("L").resize(size)
+                
+                dice = calculate_dice(pred_img, gt)
+                hd = calculate_hausdorff_distance(pred_img, gt)
+                
+                results[name]["dice"].append(dice)
+                results[name]["hd"].append(hd)
+                dice_scores[name] = dice
+                hd_scores[name] = hd
 
-            hd_list_1[num - 1] = hd1
-            hd_list_2[num - 1] = hd2
-            hd_list_3[num - 1] = hd3
-            hd_list_4[num - 1] = hd4
+            dice_str = ", ".join(f"{name} = {score:.4f}" for name, score in dice_scores.items())
+            hd_str = ", ".join(f"{name} = {score:.4f}" for name, score in hd_scores.items())
+            
 
-            print(
-                f"第{num}张图片的 Dice: UNet = {dice1:.4f}, Deeplab = {dice2:.4f}, TPSN = {dice3:.4f}, Our = {dice4:.4f}"
-            )
-            # print(f'第{num}张图片的 Dice: UNet = {dice1:.4f}, Deeplab = {dice2:.4f}')
-            print(
-                f"第{num}张图片的 Haussdorf distance : UNet = {hd1:.4f}, Deeplab = {hd2:.4f}, TPSN = {hd3:.4f}, Our = {hd4:.4f}"
-            )
-            # print(f'第{num}张图片的 Haussdorf distance : UNet = {hd1:.4f}, Deeplab = {hd2:.4f}')
+        # --- Print Results Table ---
+        print("\n--- Results ---")
+        # Header
+        header = f"{'Image':<8}" + "".join([f"{name:<18}" for name in models])
+        print(header)
+        
+        # Sub-header for metrics
+        sub_header = " " * 8 + "".join([f"{'Dice':<9}{'HD':<9}" for _ in models])
+        print(sub_header)
+        print("=" * len(header))
 
-        print(
-            f"UNet的平均 Dice: {np.mean(dice_list_1):.4f}, Haussdorf distance: {np.mean(hd_list_1):.4f}"
-        )
-        print(
-            f"Deeplab的平均 Dice: {np.mean(dice_list_2):.4f}, Haussdorf distance: {np.mean(hd_list_2):.4f}"
-        )
-        print(
-            f"TPSN的平均 Dice: {np.mean(dice_list_3):.4f}, Haussdorf distance: {np.mean(hd_list_3):.4f}"
-        )
-        print(
-            f"Our的平均 Dice: {np.mean(dice_list_4):.4f}, Haussdorf distance: {np.mean(hd_list_4):.4f}"
-        )
-    except ImportError:
-        print("\n请安装 Pillow (pip install Pillow) 以测试真实图片文件。")
+        # Data rows for each image
+        for i in range(img_num):
+            row_data = [f"Image {i+1:<2}"]
+            for name in models:
+                dice = results[name]["dice"][i]
+                hd = results[name]["hd"][i]
+                row_data.append(f"{dice:<9.4f}{hd:<9.4f}")
+            print("".join(row_data))
+
+        # Separator before average row
+        print("-" * len(header))
+
+        # Average row
+        avg_row_data = [f"{'Average':<8}"]
+        for name, metrics in results.items():
+            avg_dice = np.mean(metrics["dice"])
+            avg_hd = np.mean(metrics["hd"])
+            avg_row_data.append(f"{avg_dice:<9.4f}{avg_hd:<9.4f}")
+        print("".join(avg_row_data))
+        print("=" * len(header))
+
+    except (ImportError, FileNotFoundError) as e:
+        print(f"\nAn error occurred: {e}")
+        print("Please ensure Pillow and SciPy are installed (`pip install Pillow scipy`) and image files are in the correct path.")

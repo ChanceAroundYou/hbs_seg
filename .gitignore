@@ -3,6 +3,7 @@
 .python-version
 *.ipynb_checkpoints
 **/output/**/*.png
+img/hbs_seg/cdice
 .vscode
 # run_instance*.m
 config
